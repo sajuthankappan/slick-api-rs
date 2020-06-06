@@ -13,6 +13,7 @@ RUN cargo build --release
 
 # Copy the source and build the application.
 COPY src ./src
+RUN touch ./src/main.rs
 #RUN cargo install --path .
 RUN cargo build --release
 
@@ -24,7 +25,7 @@ FROM debian:buster-slim
 #RUN apt-get install -y libcurl4
 
 # copy the build artifact from the build stage
-#COPY --from=builder /usr/local/cargo/bin/wccg-url-shortener-warp-rs /server
+#COPY --from=builder /usr/local/cargo/bin/page-score-api /server
 COPY --from=builder /usr/src/api/target/release/page-score-api /server
 
 # Run the web service on container startup.
