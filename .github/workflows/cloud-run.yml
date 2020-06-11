@@ -23,6 +23,8 @@ env:
   PROJECT_ID: ${{ secrets.RUN_PROJECT }}
   RUN_REGION: asia-northeast1
   SERVICE_NAME: page-score
+  PAGE_SCORE_AMQP_URI: ${{ secrets.PAGE_SCORE_AMQP_URI }}
+  PAGE_SCORE_QUEUE_NAME: page-score-requests
 
 jobs:
   setup-build-deploy:
@@ -66,4 +68,5 @@ jobs:
           --image "gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA" \
           --platform "managed" \
           --allow-unauthenticated \
-          --memory "128Mi"
+          --memory "128Mi" \
+          --set-env-vars "PAGE_SCORE_AMQP_URI=$PAGE_SCORE_AMQP_URI,PAGE_SCORE_QUEUE_NAME=$PAGE_SCORE_QUEUE_NAME"
