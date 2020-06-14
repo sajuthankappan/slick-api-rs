@@ -11,7 +11,7 @@ use warp::Filter;
 #[derive(Deserialize, Serialize, Debug)]
 struct ApiConfig {
     amqp_uri: String,
-    queue_name: String,
+    score_queue_name: String,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -29,7 +29,7 @@ struct QueueResponse {
 async fn main() {
     let mut raw_config = config::Config::default();
     raw_config
-        .merge(config::Environment::with_prefix("PAGE_SCORE"))
+        .merge(config::Environment::with_prefix("SLICK"))
         .unwrap();
     let api_config = raw_config.try_into::<ApiConfig>().unwrap();
 
@@ -88,7 +88,7 @@ async fn send_page_score_request_to_queue(
     channel
         .basic_publish(
             "",
-            "page-score-requests",
+            "score-requests",
             BasicPublishOptions::default(),
             payload.into_bytes(),
             BasicProperties::default(),

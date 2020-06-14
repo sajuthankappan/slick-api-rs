@@ -905,18 +905,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "page-score-api"
-version = "0.1.0"
-dependencies = [
- "config",
- "lapin",
- "serde 1.0.111",
- "serde_json",
- "tokio",
- "warp",
-]
-
-[[package]]
 name = "parking_lot"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1457,6 +1445,18 @@ name = "slab"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c111b5bd5695e56cffe5129854aa230b39c93a305372fdbb2668ca2394eea9f8"
+
+[[package]]
+name = "slick-api"
+version = "0.1.0"
+dependencies = [
+ "config",
+ "lapin",
+ "serde 1.0.111",
+ "serde_json",
+ "tokio",
+ "warp",
+]
 
 [[package]]
 name = "smallvec"

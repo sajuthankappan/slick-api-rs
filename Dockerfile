@@ -26,7 +26,7 @@ RUN apt-get install -y openssl
 
 # copy the build artifact from the build stage
 #COPY --from=builder /usr/local/cargo/bin/page-score-api /server
-COPY --from=builder /usr/src/api/target/release/page-score-api /server
+COPY --from=builder /usr/src/api/target/release/slick-api /server
 
 # Run the web service on container startup.
 CMD ["/server"]
