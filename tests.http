@@ -1,7 +1,7 @@
-GET http://localhost:8080/ping
+GET {{slickApiBaseUrl}}/ping
 
 ###
-POST http://localhost:8080/queue
+POST {{slickApiBaseUrl}}/queue
 Content-Type: application/json
 
 {
@@ -9,4 +9,4 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:8080/report/2
+GET {{slickApiBaseUrl}}/report/5ee6756800a838040026cc2c

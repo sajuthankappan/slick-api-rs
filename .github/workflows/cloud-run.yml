@@ -25,6 +25,8 @@ env:
   SERVICE_NAME: slick
   SLICK_AMQP_URI: ${{ secrets.SLICK_AMQP_URI }}
   SLICK_SCORE_QUEUE_NAME: page-score-requests
+  SLICK_DB_URI: ${{ secrets.SLICK_DB_URI }}
+  SLICK_DB_NAME: slick
 
 jobs:
   setup-build-deploy:
@@ -70,4 +72,4 @@ jobs:
           --platform "managed" \
           --allow-unauthenticated \
           --memory "128Mi" \
-          --set-env-vars "SLICK_AMQP_URI=$SLICK_AMQP_URI,SLICK_SCORE_QUEUE_NAME=$SLICK_SCORE_QUEUE_NAME"
+          --set-env-vars "SLICK_AMQP_URI=$SLICK_AMQP_URI,SLICK_SCORE_QUEUE_NAME=$SLICK_SCORE_QUEUE_NAME,SLICK_DB_URI=$SLICK_DB_URI,SLICK_DB_NAME=$SLICK_DB_NAME"
