@@ -9,4 +9,4 @@ Content-Type: application/json
 }
 
 ###
-GET {{slickApiBaseUrl}}/report/5ee6756800a838040026cc2c
+GET {{slickApiBaseUrl}}/reports/5ee6756800a838040026cc2c

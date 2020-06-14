@@ -66,7 +66,7 @@ async fn main() {
         .and(warp::body::json())
         .and_then(queue_post_handler);
 
-    let report = warp::path("report")
+    let report = warp::path("reports")
         .and(with_db(db))
         .and(warp::path::param())
         .and_then(report_get_handler);
