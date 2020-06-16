@@ -53,7 +53,11 @@ pub struct KeyAudits {
 
     #[serde(rename = "cumulativeLayoutShift")]
     cumulative_layout_shift: Option<AuditValue>,
+
     //LH5 metrics; but not in LH6
+	#[serde(rename = "max-potential-fid")]
+	max_potential_fid: AuditValue,
+    
     #[serde(rename = "firstMeaningfulPaint")]
     first_meaningful_paint: AuditValue,
 

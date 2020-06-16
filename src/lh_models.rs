@@ -65,6 +65,9 @@ pub struct Audits {
 	#[serde(rename = "total-blocking-time")]
 	total_blocking_time: AuditValue,
 
+	#[serde(rename = "max-potential-fid")]
+	max_potential_fid: AuditValue,
+
 	#[serde(rename = "cumulative-layout-shift")]
 	cumulative_layout_shift: Option<AuditValue>,
 
