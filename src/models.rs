@@ -8,7 +8,6 @@ pub struct PageScoreParameters {
     pub url: String,
     pub throttling: Option<String>,
     pub attempts: Option<i8>,
-    
     #[serde(rename = "lighthouseVersion")]
     pub lighthouse_version: Option<String>,
 }
@@ -44,7 +43,7 @@ pub struct KeyAudits {
     speed_index: AuditValue,
 
     #[serde(rename = "largestContentfulPaint")]
-    largest_contentful_paint: AuditValue,
+    largest_contentful_paint: Option<AuditValue>,
 
     #[serde(rename = "interactive")]
     interactive: AuditValue,
@@ -53,7 +52,7 @@ pub struct KeyAudits {
     total_blocking_time: AuditValue,
 
     #[serde(rename = "cumulativeLayoutShift")]
-    cumulative_layout_shift: AuditValue,
+    cumulative_layout_shift: Option<AuditValue>,
     //LH5 metrics; but not in LH6
     #[serde(rename = "firstMeaningfulPaint")]
     first_meaningful_paint: AuditValue,
@@ -80,12 +79,12 @@ pub struct Performance {
 #[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
 #[getset(get = "pub", set = "pub")]
 pub struct ConfigSettings {
-	#[serde(rename = "throttlingMethod")]
-	throttling_method: String,
+    #[serde(rename = "throttlingMethod")]
+    throttling_method: String,
 
-	#[serde(rename = "throttling")]
+    #[serde(rename = "throttling")]
     throttling: Throttling,
-    
-	#[serde(rename = "emulatedFormFactor")]
-	emulated_form_factor: String,
+
+    #[serde(rename = "emulatedFormFactor")]
+    emulated_form_factor: String,
 }

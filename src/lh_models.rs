@@ -55,7 +55,7 @@ pub struct Audits {
 	first_contentful_paint: AuditValue,
 
 	#[serde(rename = "largest-contentful-paint")]
-	largest_contentful_paint: AuditValue,
+	largest_contentful_paint: Option<AuditValue>,
 
 	#[serde(rename = "first-meaningful-paint")]
 	first_meaningful_paint: AuditValue,
@@ -66,10 +66,10 @@ pub struct Audits {
 	total_blocking_time: AuditValue,
 
 	#[serde(rename = "cumulative-layout-shift")]
-	cumulative_layout_shift: AuditValue,
+	cumulative_layout_shift: Option<AuditValue>,
 
 	#[serde(rename = "server-response-time")]
-	server_response_time: AuditValue, // TODO: More fields
+	server_response_time: Option<AuditValue>, // TODO: More fields
 	#[serde(rename = "first-cpu-idle")]
 	first_cpu_idle: AuditValue,
 
@@ -182,10 +182,10 @@ pub struct NetworkRequestDetailsItem {
 	end_time: f64,
 
 	#[serde(rename = "finished")]
-	finished: bool,
+	finished: Option<bool>,
 
 	#[serde(rename = "transferSize")]
-	transfer_size: i64,
+	transfer_size: Option<i64>,
 
 	#[serde(rename = "resourceSize")]
 	resource_size: i64,
@@ -246,10 +246,10 @@ pub struct Metrics {
 	#[serde(rename = "scoreDisplayMode")]
 	score_display_mode: String,
 	#[serde(rename = "numericValue")]
-	numeric_value: i32,
+	numeric_value: f64,
 
 	#[serde(rename = "numericUnit")]
-	numeric_unit: String,
+	numeric_unit: Option<String>,
 
 	#[serde(rename = "details")]
 	details: MetricsDetails,
@@ -291,7 +291,7 @@ pub struct ResourceSummaryDetailsItem {
 	#[serde(rename = "requestCount")]
 	request_count: i32,
 	#[serde(rename = "transferSize")]
-	transfer_size: i64,
+	transfer_size: Option<i64>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
@@ -322,7 +322,7 @@ pub struct ConfigSettings {
 	emulated_form_factor: String,
 
 	#[serde(rename = "internalDisableDeviceScreenEmulation")]
-	internal_disable_device_screen_emulation: bool,
+	internal_disable_device_screen_emulation: Option<bool>,
 
 	channel: String,
 	//budgets: String, //TODO
