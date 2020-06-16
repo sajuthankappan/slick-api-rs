@@ -29,8 +29,12 @@ pub struct PageScoreReport {
 
     #[serde(rename = "categories")]
     categories: Categories,
+
     #[serde(rename = "keyAuditMeasures")]
     key_audits: KeyAudits,
+
+	#[serde(rename = "configSettings")]
+	config_settings: ConfigSettings,
 }
 
 #[derive(Deserialize, Serialize, Debug, Getters, Setters, Default)]
