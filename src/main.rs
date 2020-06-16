@@ -16,6 +16,7 @@ use data::repositories::report_repository;
 use data::slick_db;
 mod lh_models;
 mod models;
+use models::PageScoreParameters;
 
 #[derive(Deserialize, Serialize, Debug)]
 struct ApiConfig {
@@ -23,11 +24,6 @@ struct ApiConfig {
     score_queue_name: String,
     db_uri: String,
     db_name: String,
-}
-
-#[derive(Deserialize, Serialize)]
-struct ScoreParameters {
-    url: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -84,7 +80,7 @@ async fn main() {
 
 async fn queue_post_handler(
     channel: Channel,
-    parameters: ScoreParameters,
+    parameters: PageScoreParameters,
 ) -> Result<impl warp::Reply, Infallible> {
     send_page_score_request_to_queue(&channel, &parameters).await;
 
@@ -102,7 +98,7 @@ async fn reports_get_handler(db: Database, id: String) -> Result<impl warp::Repl
     Ok(warp::reply::json(&report))
 }
 
-async fn send_page_score_request_to_queue(channel: &Channel, parameters: &ScoreParameters) {
+async fn send_page_score_request_to_queue(channel: &Channel, parameters: &PageScoreParameters) {
     let payload = serde_json::to_string(&parameters).unwrap();
 
     channel
