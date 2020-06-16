@@ -12,7 +12,7 @@ use warp::Filter;
 use wread_data_mongodb::mongodb::Database;
 
 mod data;
-use data::repositories::report_repository;
+use data::repositories::{report_repository, site_repository};
 use data::slick_db;
 mod lh_models;
 mod models;
@@ -62,16 +62,21 @@ async fn main() {
         .and(warp::body::json())
         .and_then(queue_post_handler);
 
-    let report = warp::path("reports")
-        .and(with_db(db))
+    let reports = warp::path("reports")
         .and(warp::path::param())
+        .and(with_db(db.clone()))
         .and_then(reports_get_handler);
+
+    let sites = warp::path("sites")
+        .and(warp::path::param())
+        .and(with_db(db.clone()))
+        .and_then(sites_get_handler);
 
     let port = env::var("PORT").unwrap_or("8080".into());
     let server_port = format!("0.0.0.0:{}", port);
     let addr = server_port.parse::<SocketAddr>().unwrap();
 
-    let routes = ping.or(queue).or(report);
+    let routes = ping.or(queue).or(reports).or(sites);
 
     println!("Listening on {}", &addr);
 
@@ -92,9 +97,9 @@ async fn queue_post_handler(
     Ok(warp::reply::json(&resp))
 }
 
-async fn reports_get_handler(db: Database, id: String) -> Result<impl warp::Reply, Infallible> {
+async fn reports_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
     info!("Getting report for {}", &id);
-    let report = report_repository::get_by_report_id(&id, &db).await.unwrap();
+    let report = report_repository::get_by_id(&id, &db).await.unwrap();
     Ok(warp::reply::json(&report))
 }
 
@@ -113,6 +118,13 @@ async fn send_page_score_request_to_queue(channel: &Channel, parameters: &PageSc
         .unwrap()
         .await
         .unwrap();
+}
+
+async fn sites_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
+    info!("Getting site for {}", &id);
+    let report = site_repository::get_by_id(&id, &db).await.unwrap();
+
+    Ok(warp::reply::json(&report))
 }
 
 fn with_amqp(channel: Channel) -> impl Filter<Extract = (Channel,), Error = Infallible> + Clone {
