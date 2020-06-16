@@ -8,6 +8,8 @@ pub struct PageScoreParameters {
     pub url: String,
     pub throttling: Option<String>,
     pub attempts: Option<i8>,
+    pub device: Option<String>,
+
     #[serde(rename = "lighthouseVersion")]
     pub lighthouse_version: Option<String>,
 }
