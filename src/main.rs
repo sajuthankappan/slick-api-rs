@@ -69,7 +69,7 @@ async fn main() {
     let report = warp::path("reports")
         .and(with_db(db))
         .and(warp::path::param())
-        .and_then(report_get_handler);
+        .and_then(reports_get_handler);
 
     let port = env::var("PORT").unwrap_or("8080".into());
     let server_port = format!("0.0.0.0:{}", port);
@@ -96,7 +96,7 @@ async fn queue_post_handler(
     Ok(warp::reply::json(&resp))
 }
 
-async fn report_get_handler(db: Database, id: String) -> Result<impl warp::Reply, Infallible> {
+async fn reports_get_handler(db: Database, id: String) -> Result<impl warp::Reply, Infallible> {
     info!("Getting report for {}", &id);
     let report = report_repository::get_by_report_id(&id, &db).await.unwrap();
     Ok(warp::reply::json(&report))
