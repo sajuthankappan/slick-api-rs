@@ -4,6 +4,13 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug, Getters, Setters, Default)]
 #[getset(get = "pub", set = "pub")]
+pub struct ScoreParameters {
+    pub page: Option<PageScoreParameters>,
+    pub site: Option<SiteScoreParameters>,
+}
+
+#[derive(Deserialize, Serialize, Debug, Getters, Setters, Default)]
+#[getset(get = "pub", set = "pub")]
 pub struct PageScoreParameters {
     pub url: String,
     pub throttling: Option<String>,
@@ -12,6 +19,13 @@ pub struct PageScoreParameters {
     
     #[serde(rename = "lighthouseVersion")]
     pub lighthouse_version: Option<String>,
+}
+
+#[derive(Deserialize, Serialize, Debug, Getters, Setters, Default)]
+#[getset(get = "pub", set = "pub")]
+pub struct SiteScoreParameters {
+    #[serde(rename = "siteId")]
+    pub site_id: String,
 }
 
 #[derive(Deserialize, Serialize, Debug, Getters, Setters, Default)]

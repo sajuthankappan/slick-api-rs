@@ -16,7 +16,7 @@ use data::repositories::{report_repository, site_repository};
 use data::slick_db;
 mod lh_models;
 mod models;
-use models::PageScoreParameters;
+use models::{ScoreParameters, PageScoreParameters, SiteScoreParameters};
 
 #[derive(Deserialize, Serialize, Debug)]
 struct ApiConfig {
@@ -28,7 +28,7 @@ struct ApiConfig {
 
 #[derive(Deserialize, Serialize, Debug)]
 struct QueueResponse {
-    code: i8,
+    code: i16,
     message: String,
 }
 
@@ -56,11 +56,17 @@ async fn main() {
 
     let ping = warp::path("ping").map(|| format!("pong"));
 
-    let queue = warp::post()
-        .and(warp::path("queue"))
-        .and(with_amqp(channel))
+    let queue_page = warp::post()
+        .and(warp::path("queue-page"))
+        .and(with_amqp(channel.clone()))
         .and(warp::body::json())
-        .and_then(queue_post_handler);
+        .and_then(queue_page_post_handler);
+
+    let queue_site = warp::post()
+        .and(warp::path("queue-site"))
+        .and(with_amqp(channel.clone()))
+        .and(warp::body::json())
+        .and_then(queue_site_post_handler);
 
     let reports = warp::path("reports")
         .and(warp::path::param())
@@ -76,22 +82,46 @@ async fn main() {
     let server_port = format!("0.0.0.0:{}", port);
     let addr = server_port.parse::<SocketAddr>().unwrap();
 
-    let routes = ping.or(queue).or(reports).or(sites);
+    let routes = ping.or(queue_page).or(queue_site).or(reports).or(sites);
 
     println!("Listening on {}", &addr);
 
     warp::serve(routes).run(addr).await;
 }
 
-async fn queue_post_handler(
+async fn queue_page_post_handler(
     channel: Channel,
-    parameters: PageScoreParameters,
+    page_score_parameters: PageScoreParameters,
 ) -> Result<impl warp::Reply, Infallible> {
-    send_page_score_request_to_queue(&channel, &parameters).await;
+    let parameters = ScoreParameters {
+        page: Some(page_score_parameters),
+        site: None,
+    };
+
+    send_score_request_to_queue(&channel, &parameters).await;
 
     let resp = QueueResponse {
-        code: 1,
-        message: parameters.url,
+        code: 200,
+        message: String::from("Queued"),
+    };
+
+    Ok(warp::reply::json(&resp))
+}
+
+async fn queue_site_post_handler(
+    channel: Channel,
+    site_score_parameters: SiteScoreParameters,
+) -> Result<impl warp::Reply, Infallible> {
+    let parameters = ScoreParameters {
+        page: None,
+        site: Some(site_score_parameters),
+    };
+
+    send_score_request_to_queue(&channel, &parameters).await;
+
+    let resp = QueueResponse {
+        code: 200,
+        message: String::from("Queued"),
     };
 
     Ok(warp::reply::json(&resp))
@@ -103,7 +133,7 @@ async fn reports_get_handler(id: String, db: Database) -> Result<impl warp::Repl
     Ok(warp::reply::json(&report))
 }
 
-async fn send_page_score_request_to_queue(channel: &Channel, parameters: &PageScoreParameters) {
+async fn send_score_request_to_queue(channel: &Channel, parameters: &ScoreParameters) {
     let payload = serde_json::to_string(&parameters).unwrap();
 
     channel
