@@ -16,9 +16,8 @@ Content-Type: application/json
   "siteId": "5ee92bd96b118d28f9ba4cd6"
 }
 
-
 ###
-GET {{slickApiBaseUrl}}/reports/5ee921d800f6b9c100782f37
+GET {{slickApiBaseUrl}}/reports/5eef4e4b00b86217007154ca
 
 ###
 GET {{slickApiBaseUrl}}/sites/5ee92bd96b118d28f9ba4cd6

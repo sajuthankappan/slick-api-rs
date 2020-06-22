@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug, Getters, Setters, Default)]
 #[getset(get = "pub", set = "pub")]
-pub struct PageScoreResults {
+pub struct AllAttemptReports {
 	#[serde(rename = "bestScore")]
 	best_score: f64,
 
@@ -11,12 +11,12 @@ pub struct PageScoreResults {
 	best_score_index: usize,
 
 	#[serde(rename = "results")]
-	results: Vec<PageScore>,
+	reports: Vec<Report>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
 #[getset(get = "pub", set = "pub")]
-pub struct PageScore {
+pub struct Report {
 	#[serde(rename = "lighthouseVersion")]
 	lighthouse_version: String,
 

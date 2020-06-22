@@ -1,6 +1,7 @@
 use crate::lh_models::{AuditValue, Throttling};
 use getset::{Getters, Setters};
 use serde::{Deserialize, Serialize};
+use wread_data_mongodb::mongodb::bson::oid::ObjectId;
 
 #[derive(Deserialize, Serialize, Debug, Getters, Setters, Default)]
 #[getset(get = "pub", set = "pub")]
@@ -16,7 +17,6 @@ pub struct PageScoreParameters {
     pub throttling: Option<String>,
     pub attempts: Option<i8>,
     pub device: Option<String>,
-    
     #[serde(rename = "lighthouseVersion")]
     pub lighthouse_version: Option<String>,
 }
@@ -28,9 +28,9 @@ pub struct SiteScoreParameters {
     pub site_id: String,
 }
 
-#[derive(Deserialize, Serialize, Debug, Getters, Setters, Default)]
+#[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
 #[getset(get = "pub", set = "pub")]
-pub struct PageScoreReport {
+pub struct UrlAuditDetail {
     #[serde(rename = "lighthouseVersion")]
     pub lighthouse_version: String,
 
@@ -46,16 +46,16 @@ pub struct PageScoreReport {
     #[serde(rename = "categories")]
     categories: Categories,
 
-    #[serde(rename = "keyAuditMeasures")]
-    key_audits: KeyAudits,
+    #[serde(rename = "configSettings")]
+    config_settings: ConfigSettings,
 
-	#[serde(rename = "configSettings")]
-	config_settings: ConfigSettings,
+    #[serde(rename = "webVitals")]
+    web_vitals: WebVitals,
 }
 
-#[derive(Deserialize, Serialize, Debug, Getters, Setters, Default)]
+#[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
 #[getset(get = "pub", set = "pub")]
-pub struct KeyAudits {
+pub struct WebVitals {
     #[serde(rename = "firstContentfulPaint")]
     first_contentful_paint: AuditValue,
 
@@ -75,9 +75,8 @@ pub struct KeyAudits {
     cumulative_layout_shift: Option<AuditValue>,
 
     //LH5 metrics; but not in LH6
-	#[serde(rename = "maxPotentialFid")]
-	max_potential_fid: AuditValue,
-    
+    #[serde(rename = "maxPotentialFid")]
+    max_potential_fid: AuditValue,
     #[serde(rename = "firstMeaningfulPaint")]
     first_meaningful_paint: AuditValue,
 
@@ -115,12 +114,28 @@ pub struct ConfigSettings {
 
 #[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
 #[getset(get = "pub", set = "pub")]
-pub struct Site {
+pub struct LighthouseSettings {
+    #[serde(rename = "devices")]
+    devices: Vec<String>,
+
+    #[serde(rename = "versions")]
+    versions: Vec<String>,
+}
+
+#[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
+#[getset(get = "pub", set = "pub")]
+pub struct Site {    
+    #[serde(rename = "_id")]
+    id: ObjectId,
+
     #[serde(rename = "name")]
     name: String,
 
     #[serde(rename = "pages")]
     pages: Vec<Page>,
+
+    #[serde(rename = "lighthouseSettings")]
+    lighthouse_settings: LighthouseSettings,
 }
 
 #[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
@@ -131,4 +146,147 @@ pub struct Page {
 
     #[serde(rename = "url")]
     url: String,
+}
+
+#[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
+#[getset(get = "pub", set = "pub")]
+pub struct AuditProfile {
+    #[serde(rename = "name")]
+    name: String,
+
+    #[serde(rename = "device")]
+    device: String,
+
+    #[serde(rename = "lighthouseVersion")]
+    lighthouse_version: String,
+}
+
+impl AuditProfile {
+    pub fn new(device: String, lighthouse_version: String) -> AuditProfile {
+        AuditProfile {
+            name: format!("{}-{}", &device, &lighthouse_version),
+            device,
+            lighthouse_version,
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
+#[getset(get = "pub", set = "pub")]
+pub struct PageAuditSummary {
+    #[serde(rename = "pageName")]
+    page_name: String,
+
+    #[serde(rename = "auditProfile")]
+    audit_profile: AuditProfile,
+
+    #[serde(rename = "lighthouseVersion")]
+    lighthouse_version: String,
+
+    #[serde(rename = "requestedUrl")]
+    requested_url: String,
+
+    #[serde(rename = "finalUrl")]
+    final_url: String,
+
+    #[serde(rename = "fetchTime")]
+    fetch_time: String,
+
+    #[serde(rename = "categories")]
+    categories: Categories,
+
+    #[serde(rename = "configSettings")]
+    config_settings: ConfigSettings,
+
+    #[serde(rename = "webVitals")]
+    web_vitals: WebVitals,
+
+    #[serde(rename = "auditDetailId")]
+    audit_detail_id: ObjectId,
+}
+
+impl PageAuditSummary {
+    pub fn new(
+        page_name: String,
+        audit_profile: AuditProfile,
+        lighthouse_version: String,
+        requested_url: String,
+        final_url: String,
+        fetch_time: String,
+        categories: Categories,
+        config_settings: ConfigSettings,
+        web_vitals: WebVitals,
+        audit_detail_id: ObjectId,
+    ) -> PageAuditSummary {
+        PageAuditSummary {
+            page_name,
+            audit_profile,
+            lighthouse_version,
+            requested_url,
+            final_url,
+            fetch_time,
+            categories,
+            config_settings,
+            web_vitals,
+            audit_detail_id,
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
+#[getset(get = "pub", set = "pub")]
+pub struct SitePageTread {
+    #[serde(rename = "siteId")]
+    site_id: ObjectId,
+
+    #[serde(rename = "pageName")]
+    page_name: String,
+
+    #[serde(rename = "url")]
+    url: String,
+
+    #[serde(rename = "pageAuditSummaries")]
+    page_audit_summaries: Vec<PageAuditSummary>,
+}
+
+impl SitePageTread {
+    pub fn new(site_id: ObjectId, page_name: String, url: String) -> SitePageTread {
+        SitePageTread{
+            site_id,
+            page_name,
+            url,
+            page_audit_summaries: Vec::new(),
+        }
+    }
+
+    pub fn add_page_audit_summary(&mut self, page_audit_summary: PageAuditSummary) {
+        self.page_audit_summaries.push(page_audit_summary);
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
+#[getset(get = "pub", set = "pub")]
+pub struct SiteTread {
+    #[serde(rename = "siteId")]
+    site_id: ObjectId,
+
+    #[serde(rename = "siteName")]
+    site_name: String,
+
+    #[serde(rename = "sitePageTreads")]
+    site_page_treads: Vec<SitePageTread>,
+}
+
+impl SiteTread {
+    pub fn new(site_id: ObjectId, site_name: String) -> SiteTread {
+        SiteTread {
+            site_id,
+            site_name,
+            site_page_treads: Vec::<SitePageTread>::new(),
+        }
+    }
+
+    pub fn add_site_page_tread(&mut self, site_page_tread: SitePageTread) {
+        self.site_page_treads.push(site_page_tread);
+    }
 }

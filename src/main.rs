@@ -12,7 +12,7 @@ use warp::Filter;
 use wread_data_mongodb::mongodb::Database;
 
 mod data;
-use data::repositories::{report_repository, site_repository};
+use data::repositories::{url_audit_detail_repository, site_repository};
 use data::slick_db;
 mod lh_models;
 mod models;
@@ -129,7 +129,7 @@ async fn queue_site_post_handler(
 
 async fn reports_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
     info!("Getting report for {}", &id);
-    let report = report_repository::get_by_id(&id, &db).await.unwrap();
+    let report = url_audit_detail_repository::get_by_id(&id, &db).await.unwrap();
     Ok(warp::reply::json(&report))
 }
 
