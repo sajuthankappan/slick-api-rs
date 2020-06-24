@@ -1,6 +1,7 @@
 use crate::lh_models::{AuditValue, Throttling};
 use getset::{Getters, Setters};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use wread_data_mongodb::mongodb::bson::oid::ObjectId;
 
 #[derive(Deserialize, Serialize, Debug, Getters, Setters, Default)]
@@ -30,7 +31,7 @@ pub struct SiteScoreParameters {
 
 #[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
 #[getset(get = "pub", set = "pub")]
-pub struct UrlAuditDetail {
+pub struct AuditDetail {
     #[serde(rename = "lighthouseVersion")]
     pub lighthouse_version: String,
 
@@ -124,7 +125,7 @@ pub struct LighthouseSettings {
 
 #[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
 #[getset(get = "pub", set = "pub")]
-pub struct Site {    
+pub struct Site {
     #[serde(rename = "_id")]
     id: ObjectId,
 
@@ -173,7 +174,7 @@ impl AuditProfile {
 
 #[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
 #[getset(get = "pub", set = "pub")]
-pub struct PageAuditSummary {
+pub struct AuditSummary {
     #[serde(rename = "pageName")]
     page_name: String,
 
@@ -205,7 +206,7 @@ pub struct PageAuditSummary {
     audit_detail_id: ObjectId,
 }
 
-impl PageAuditSummary {
+impl AuditSummary {
     pub fn new(
         page_name: String,
         audit_profile: AuditProfile,
@@ -217,8 +218,8 @@ impl PageAuditSummary {
         config_settings: ConfigSettings,
         web_vitals: WebVitals,
         audit_detail_id: ObjectId,
-    ) -> PageAuditSummary {
-        PageAuditSummary {
+    ) -> AuditSummary {
+        AuditSummary {
             page_name,
             audit_profile,
             lighthouse_version,
@@ -235,7 +236,7 @@ impl PageAuditSummary {
 
 #[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
 #[getset(get = "pub", set = "pub")]
-pub struct SitePageTread {
+pub struct PageAuditSummary {
     #[serde(rename = "siteId")]
     site_id: ObjectId,
 
@@ -245,22 +246,27 @@ pub struct SitePageTread {
     #[serde(rename = "url")]
     url: String,
 
-    #[serde(rename = "pageAuditSummaries")]
-    page_audit_summaries: Vec<PageAuditSummary>,
+    #[serde(rename = "auditSummaries")]
+    audit_summaries: HashMap<String, AuditSummary>,
 }
 
-impl SitePageTread {
-    pub fn new(site_id: ObjectId, page_name: String, url: String) -> SitePageTread {
-        SitePageTread{
+impl PageAuditSummary {
+    pub fn new(site_id: ObjectId, page_name: String, url: String) -> PageAuditSummary {
+        PageAuditSummary {
             site_id,
             page_name,
             url,
-            page_audit_summaries: Vec::new(),
+            audit_summaries: HashMap::new(),
         }
     }
 
-    pub fn add_page_audit_summary(&mut self, page_audit_summary: PageAuditSummary) {
-        self.page_audit_summaries.push(page_audit_summary);
+    pub fn add_audit_summary(&mut self, audit_summary: AuditSummary) {
+        let audit_profile_name = format!(
+            "{}-{}",
+            audit_summary.audit_profile.device, audit_summary.lighthouse_version
+        );
+        self.audit_summaries
+            .insert(audit_profile_name, audit_summary);
     }
 }
 
@@ -273,8 +279,8 @@ pub struct SiteTread {
     #[serde(rename = "siteName")]
     site_name: String,
 
-    #[serde(rename = "sitePageTreads")]
-    site_page_treads: Vec<SitePageTread>,
+    #[serde(rename = "pageAuditSummaries")]
+    page_audit_summaries: Vec<PageAuditSummary>,
 }
 
 impl SiteTread {
@@ -282,11 +288,11 @@ impl SiteTread {
         SiteTread {
             site_id,
             site_name,
-            site_page_treads: Vec::<SitePageTread>::new(),
+            page_audit_summaries: Vec::new(),
         }
     }
 
-    pub fn add_site_page_tread(&mut self, site_page_tread: SitePageTread) {
-        self.site_page_treads.push(site_page_tread);
+    pub fn add_page_audit_summary(&mut self, page_audit_summary: PageAuditSummary) {
+        self.page_audit_summaries.push(page_audit_summary);
     }
 }
