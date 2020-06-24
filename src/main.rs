@@ -157,8 +157,9 @@ async fn treads_get_handler(id: String, db: Database) -> Result<impl warp::Reply
 
 async fn treads_for_site_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
     info!("Getting treads for site {}", &id);
-    let report = site_tread_repository::get_by_site_id(&id, &db).await.unwrap();
-    Ok(warp::reply::json(&report))
+    let treads = site_tread_repository::get_by_site_id(&id, &db).await.unwrap();
+    dbg!(&treads);
+    Ok(warp::reply::json(&treads))
 }
 
 async fn send_score_request_to_queue(channel: &Channel, parameters: &ScoreParameters) {
