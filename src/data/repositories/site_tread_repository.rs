@@ -13,5 +13,5 @@ pub async fn get_by_id(id: &String, db: &Database) -> Result<Option<SiteTread>, 
 
 pub async fn get_by_site_id(site_id: &String, db: &Database) -> Result<Vec<SiteTread>, Error> {
     let object_id = ObjectId::with_string(site_id.as_str()).unwrap();
-    crud_repository::find(doc! {site_id: &object_id}, COLLECTION_NAME, &db).await
+    crud_repository::find(doc! {"siteId": &object_id}, COLLECTION_NAME, &db).await
 }

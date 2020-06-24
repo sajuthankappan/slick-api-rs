@@ -12,11 +12,11 @@ use warp::Filter;
 use wread_data_mongodb::mongodb::Database;
 
 mod data;
-use data::repositories::{audit_detail_repository, site_repository};
+use data::repositories::{audit_detail_repository, site_repository, site_tread_repository};
 use data::slick_db;
 mod lh_models;
 mod models;
-use models::{ScoreParameters, PageScoreParameters, SiteScoreParameters};
+use models::{PageScoreParameters, ScoreParameters, SiteScoreParameters};
 
 #[derive(Deserialize, Serialize, Debug)]
 struct ApiConfig {
@@ -78,11 +78,27 @@ async fn main() {
         .and(with_db(db.clone()))
         .and_then(sites_get_handler);
 
+    let treads = warp::path("treads")
+        .and(warp::path::param())
+        .and(with_db(db.clone()))
+        .and_then(treads_get_handler);
+
+
+    let treads = warp::path("site-treads")
+        .and(warp::path::param())
+        .and(with_db(db.clone()))
+        .and_then(treads_for_site_get_handler);
+
     let port = env::var("PORT").unwrap_or("8080".into());
     let server_port = format!("0.0.0.0:{}", port);
     let addr = server_port.parse::<SocketAddr>().unwrap();
 
-    let routes = ping.or(queue_page).or(queue_site).or(reports).or(sites);
+    let routes = ping
+        .or(queue_page)
+        .or(queue_site)
+        .or(reports)
+        .or(treads)
+        .or(sites);
 
     println!("Listening on {}", &addr);
 
@@ -130,6 +146,18 @@ async fn queue_site_post_handler(
 async fn reports_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
     info!("Getting report for {}", &id);
     let report = audit_detail_repository::get_by_id(&id, &db).await.unwrap();
+    Ok(warp::reply::json(&report))
+}
+
+async fn treads_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
+    info!("Getting tread for {}", &id);
+    let report = site_tread_repository::get_by_id(&id, &db).await.unwrap();
+    Ok(warp::reply::json(&report))
+}
+
+async fn treads_for_site_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
+    info!("Getting treads for site {}", &id);
+    let report = site_tread_repository::get_by_site_id(&id, &db).await.unwrap();
     Ok(warp::reply::json(&report))
 }
 
