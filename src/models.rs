@@ -273,6 +273,9 @@ impl PageAuditSummary {
 #[derive(Deserialize, Serialize, Debug, Getters, Setters, Default, Clone)]
 #[getset(get = "pub", set = "pub")]
 pub struct SiteTread {
+    #[serde(skip_serializing, rename = "_id")]
+    id: Option<ObjectId>,
+
     #[serde(rename = "siteId")]
     site_id: ObjectId,
 
@@ -286,6 +289,7 @@ pub struct SiteTread {
 impl SiteTread {
     pub fn new(site_id: ObjectId, site_name: String) -> SiteTread {
         SiteTread {
+            id: None,
             site_id,
             site_name,
             page_audit_summaries: Vec::new(),
