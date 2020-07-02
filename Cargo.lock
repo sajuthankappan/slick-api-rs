@@ -2029,8 +2029,8 @@ dependencies = [
 
 [[package]]
 name = "slick-models"
-version = "0.2.1"
-source = "git+https://github.com/sajuthankappan/slick-models-rs.git#1497dcf1e0703c86e7536bf56d0fbe698bc4fcb6"
+version = "0.3.0"
+source = "git+https://github.com/sajuthankappan/slick-models-rs.git#6620b41bd4f168f6798b12ceb22cd4d52c9718ad"
 dependencies = [
  "bson",
  "getset",
@@ -2710,5 +2710,5 @@ version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39f0c922f1a334134dc2f7a8b67dc5d25f0735263feec974345ff706bcf20b0d"
 dependencies = [
- "linked-hash-map 0.5.3",
+ "linked-hash-map 0.3.0",
 ]
