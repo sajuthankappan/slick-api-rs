@@ -72,4 +72,5 @@ jobs:
           --platform "managed" \
           --allow-unauthenticated \
           --memory "128Mi" \
+          --machine-type=n1-highcpu-8 \
           --set-env-vars "SLICK_AMQP_URI=$SLICK_AMQP_URI,SLICK_SCORE_QUEUE_NAME=$SLICK_SCORE_QUEUE_NAME,SLICK_DB_URI=$SLICK_DB_URI,SLICK_DB_NAME=$SLICK_DB_NAME"
