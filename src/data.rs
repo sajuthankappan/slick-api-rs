@@ -1,2 +1,2 @@
-pub mod slick_db;
 pub mod repositories;
+pub mod slick_db;
