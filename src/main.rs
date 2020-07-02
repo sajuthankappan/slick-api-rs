@@ -1,8 +1,5 @@
 use config;
 use env_logger;
-use lapin::{
-    options::BasicPublishOptions, BasicProperties, Channel, Connection, ConnectionProperties,
-};
 use log::info;
 use serde::{Deserialize, Serialize};
 use std::convert::Infallible;
@@ -14,7 +11,7 @@ use wread_data_mongodb::mongodb::Database;
 mod data;
 use data::repositories::{audit_detail_repository, site_repository, site_tread_repository};
 use data::slick_db;
-use slick_models::{PageScoreParameters, ScoreParameters, SiteScoreParameters};
+//use slick_models::{PageScoreParameters, ScoreParameters, SiteScoreParameters};
 
 #[derive(Deserialize, Serialize, Debug)]
 struct ApiConfig {
@@ -43,18 +40,18 @@ async fn main() {
 
     let db = slick_db::get_db(api_config.db_uri.clone(), api_config.db_name.clone()).await;
 
-    let amqp_addr = api_config.amqp_uri;
+    /*let amqp_addr = api_config.amqp_uri;
     let conn = Connection::connect(
         &amqp_addr,
         ConnectionProperties::default().with_default_executor(8),
     )
     .await
     .unwrap();
-    let channel = conn.create_channel().await.unwrap();
+    let channel = conn.create_channel().await.unwrap();*/
 
     let ping = warp::path("ping").map(|| format!("pong"));
 
-    let queue_page = warp::post()
+    /*let queue_page = warp::post()
         .and(warp::path("queue-page"))
         .and(with_amqp(channel.clone()))
         .and(warp::body::json())
@@ -64,7 +61,7 @@ async fn main() {
         .and(warp::path("queue-site"))
         .and(with_amqp(channel.clone()))
         .and(warp::body::json())
-        .and_then(queue_site_post_handler);
+        .and_then(queue_site_post_handler);*/
 
     let reports = warp::path("reports")
         .and(warp::path::param())
@@ -91,8 +88,8 @@ async fn main() {
     let addr = server_port.parse::<SocketAddr>().unwrap();
 
     let routes = ping
-        .or(queue_page)
-        .or(queue_site)
+        /*.or(queue_page)
+        .or(queue_site)*/
         .or(reports)
         .or(treads)
         .or(site_treads)
@@ -102,7 +99,7 @@ async fn main() {
 
     warp::serve(routes).run(addr).await;
 }
-
+/*
 async fn queue_page_post_handler(
     channel: Channel,
     page_score_parameters: PageScoreParameters,
@@ -140,7 +137,7 @@ async fn queue_site_post_handler(
 
     Ok(warp::reply::json(&resp))
 }
-
+*/
 async fn reports_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
     info!("Getting report for {}", &id);
     let report = audit_detail_repository::get_by_id(&id, &db).await.unwrap();
@@ -163,7 +160,7 @@ async fn treads_for_site_get_handler(
         .unwrap();
     Ok(warp::reply::json(&treads))
 }
-
+/*
 async fn send_score_request_to_queue(channel: &Channel, parameters: &ScoreParameters) {
     let payload = serde_json::to_string(&parameters).unwrap();
 
@@ -180,18 +177,18 @@ async fn send_score_request_to_queue(channel: &Channel, parameters: &ScoreParame
         .await
         .unwrap();
 }
-
+*/
 async fn sites_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
     info!("Getting site for {}", &id);
     let report = site_repository::get_by_id(&id, &db).await.unwrap();
 
     Ok(warp::reply::json(&report))
 }
-
+/*
 fn with_amqp(channel: Channel) -> impl Filter<Extract = (Channel,), Error = Infallible> + Clone {
     warp::any().map(move || channel.clone())
 }
-
+*/
 fn with_db(db: Database) -> impl Filter<Extract = (Database,), Error = Infallible> + Clone {
     warp::any().map(move || db.clone())
 }
