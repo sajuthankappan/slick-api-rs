@@ -1,22 +1,6 @@
 GET {{slickApiBaseUrl}}/ping
 
 ###
-POST {{slickApiBaseUrl}}/queue-page
-Content-Type: application/json
-
-{
-  "url": "https://news.saju.dev"
-}
-
-###
-POST {{slickApiBaseUrl}}/queue-site
-Content-Type: application/json
-
-{
-  "siteId": "5ee92bd96b118d28f9ba4cd6"
-}
-
-###
 GET {{slickApiBaseUrl}}/reports/5efe600800ade93e0090c44c
 
 ###
@@ -27,3 +11,6 @@ GET {{slickApiBaseUrl}}/site-treads/5ef06d7023291c9995dc9b3a
 
 ###
 GET {{slickApiBaseUrl}}/sites/5ee92bd96b118d28f9ba4cd6
+
+###
+GET {{slickApiBaseUrl}}/trend/5ee92bd96b118d28f9ba4cd6/home/desktop-6

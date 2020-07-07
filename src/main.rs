@@ -9,7 +9,9 @@ use warp::Filter;
 use wread_data_mongodb::mongodb::Database;
 
 mod data;
-use data::repositories::{audit_detail_repository, site_repository, site_tread_repository};
+use data::repositories::{
+    audit_detail_repository, audit_summary_repository, site_repository, site_tread_repository,
+};
 use data::slick_db;
 //use slick_models::{PageScoreParameters, ScoreParameters, SiteScoreParameters};
 
@@ -63,6 +65,13 @@ async fn main() {
         .and(warp::body::json())
         .and_then(queue_site_post_handler);*/
 
+    let trend = warp::path("trend")
+        .and(warp::path::param())
+        .and(warp::path::param())
+        .and(warp::path::param())
+        .and(with_db(db.clone()))
+        .and_then(trend_get_handler);
+
     let reports = warp::path("reports")
         .and(warp::path::param())
         .and(with_db(db.clone()))
@@ -90,6 +99,7 @@ async fn main() {
     let routes = ping
         /*.or(queue_page)
         .or(queue_site)*/
+        .or(trend)
         .or(reports)
         .or(treads)
         .or(site_treads)
@@ -138,6 +148,17 @@ async fn queue_site_post_handler(
     Ok(warp::reply::json(&resp))
 }
 */
+async fn trend_get_handler(
+    site_id: String,
+    page_id: String,
+    audit_profile_id: String,
+    db: Database,
+) -> Result<impl warp::Reply, Infallible> {
+    info!("Getting trend for site {}", &site_id);
+    let report = audit_summary_repository::get_trend(&site_id, &page_id, &audit_profile_id, &db).await.unwrap();
+    Ok(warp::reply::json(&report))
+}
+
 async fn reports_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
     info!("Getting report for {}", &id);
     let report = audit_detail_repository::get_by_id(&id, &db).await.unwrap();
@@ -181,7 +202,6 @@ async fn send_score_request_to_queue(channel: &Channel, parameters: &ScoreParame
 async fn sites_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
     info!("Getting site for {}", &id);
     let report = site_repository::get_by_id(&id, &db).await.unwrap();
-
     Ok(warp::reply::json(&report))
 }
 /*
