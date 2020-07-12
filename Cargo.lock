@@ -1724,8 +1724,8 @@ dependencies = [
 
 [[package]]
 name = "slick-models"
-version = "0.6.0"
-source = "git+https://github.com/sajuthankappan/slick-models-rs.git#08be498e2cc3e6f2f3208dd40048135e213d9f2b"
+version = "0.8.2"
+source = "git+https://github.com/sajuthankappan/slick-models-rs.git#b17dbcaceb204039ffa82f2686f2ed143ac885d6"
 dependencies = [
  "bson",
  "getset",
