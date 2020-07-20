@@ -1708,7 +1708,7 @@ checksum = "c111b5bd5695e56cffe5129854aa230b39c93a305372fdbb2668ca2394eea9f8"
 
 [[package]]
 name = "slick-api"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "config",
  "env_logger",
@@ -1724,8 +1724,8 @@ dependencies = [
 
 [[package]]
 name = "slick-models"
-version = "0.9.8"
-source = "git+https://github.com/sajuthankappan/slick-models-rs.git#02b9ad1cbf9f28de63335fcfe05bbd4ca1b17830"
+version = "0.9.9"
+source = "git+https://github.com/sajuthankappan/slick-models-rs.git#2f6f798f846649ccc9bb71e6b93b50de5224a503"
 dependencies = [
  "bson",
  "getset",
