@@ -1,4 +1,10 @@
+mod data;
+
 use config;
+use data::repositories::{
+    audit_detail_repository, audit_summary_repository, group_repository, site_repository,
+};
+use data::slick_db;
 use env_logger;
 use log::info;
 use serde::{Deserialize, Serialize};
@@ -7,10 +13,6 @@ use std::env;
 use std::net::SocketAddr;
 use warp::Filter;
 use wread_data_mongodb::mongodb::Database;
-
-mod data;
-use data::repositories::{audit_detail_repository, audit_summary_repository, site_repository};
-use data::slick_db;
 //use slick_models::{PageScoreParameters, ScoreParameters, SiteScoreParameters};
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -80,6 +82,11 @@ async fn main() {
         .and(with_db(db.clone()))
         .and_then(sites_get_handler);
 
+    let groups = warp::path("groups")
+        .and(warp::path::param())
+        .and(with_db(db.clone()))
+        .and_then(groups_get_handler);
+
     let port = env::var("PORT").unwrap_or("8080".into());
     let server_port = format!("0.0.0.0:{}", port);
     let addr = server_port.parse::<SocketAddr>().unwrap();
@@ -89,7 +96,8 @@ async fn main() {
         .or(queue_site)*/
         .or(trend)
         .or(reports)
-        .or(sites);
+        .or(sites)
+        .or(groups);
 
     println!("Listening on {}", &addr);
 
@@ -177,6 +185,13 @@ async fn sites_get_handler(id: String, db: Database) -> Result<impl warp::Reply,
     let report = site_repository::get_by_id(&id, &db).await.unwrap();
     Ok(warp::reply::json(&report))
 }
+
+async fn groups_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
+    info!("Getting group for {}", &id);
+    let report = group_repository::get_by_id(&id, &db).await.unwrap();
+    Ok(warp::reply::json(&report))
+}
+
 /*
 fn with_amqp(channel: Channel) -> impl Filter<Extract = (Channel,), Error = Infallible> + Clone {
     warp::any().map(move || channel.clone())
