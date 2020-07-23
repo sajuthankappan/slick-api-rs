@@ -2,7 +2,7 @@ mod data;
 
 use config;
 use data::repositories::{
-    audit_detail_repository, audit_summary_repository, group_repository, site_repository,
+    audit_detail_repository, audit_summary_repository, group_site_repository, site_repository,
 };
 use data::slick_db;
 use env_logger;
@@ -82,10 +82,10 @@ async fn main() {
         .and(with_db(db.clone()))
         .and_then(sites_get_handler);
 
-    let groups = warp::path("groups")
+    let groups = warp::path("group-sites")
         .and(warp::path::param())
         .and(with_db(db.clone()))
-        .and_then(groups_get_handler);
+        .and_then(group_sites_get_handler);
 
     let port = env::var("PORT").unwrap_or("8080".into());
     let server_port = format!("0.0.0.0:{}", port);
@@ -182,14 +182,16 @@ async fn send_score_request_to_queue(channel: &Channel, parameters: &ScoreParame
 
 async fn sites_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
     info!("Getting site for {}", &id);
-    let report = site_repository::get_by_id(&id, &db).await.unwrap();
-    Ok(warp::reply::json(&report))
+    let site = site_repository::get_by_id(&id, &db).await.unwrap();
+    Ok(warp::reply::json(&site))
 }
 
-async fn groups_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
-    info!("Getting group for {}", &id);
-    let report = group_repository::get_by_id(&id, &db).await.unwrap();
-    Ok(warp::reply::json(&report))
+async fn group_sites_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
+    info!("Getting sites for group {}", &id);
+    let group_sites = group_site_repository::get_by_group_id(&id, &db)
+        .await
+        .unwrap();
+    Ok(warp::reply::json(&group_sites))
 }
 
 /*

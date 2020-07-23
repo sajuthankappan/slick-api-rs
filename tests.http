@@ -7,7 +7,7 @@ GET {{slickApiBaseUrl}}/reports/5efe600800ade93e0090c44c
 GET {{slickApiBaseUrl}}/treads/5ef359a700d3fe770059eb13
 
 ###
-GET {{slickApiBaseUrl}}/groups/5f19e077e6a84b43bd9d776b
+GET {{slickApiBaseUrl}}/group-sites/5f19e077e6a84b43bd9d776b
 
 ###
 GET {{slickApiBaseUrl}}/sites/5ee92bd96b118d28f9ba4cd6
