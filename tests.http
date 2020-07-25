@@ -4,9 +4,6 @@ GET {{slickApiBaseUrl}}/ping
 GET {{slickApiBaseUrl}}/reports/5efe600800ade93e0090c44c
 
 ###
-GET {{slickApiBaseUrl}}/treads/5ef359a700d3fe770059eb13
-
-###
 GET {{slickApiBaseUrl}}/group-sites/5f19e077e6a84b43bd9d776b
 
 ###
