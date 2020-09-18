@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use std::convert::Infallible;
 use std::env;
 use std::net::SocketAddr;
-use warp::Filter;
+use warp::{http::StatusCode, Filter};
 use wread_data_mongodb::mongodb::Database;
 //use slick_models::{PageScoreParameters, ScoreParameters, SiteScoreParameters};
 
@@ -66,6 +66,7 @@ async fn main() {
         .and_then(queue_site_post_handler);*/
 
     let trend = warp::path("trend")
+        .and(warp::get())
         .and(warp::path::param())
         .and(warp::path::param())
         .and(warp::path::param())
@@ -73,16 +74,31 @@ async fn main() {
         .and_then(trend_get_handler);
 
     let reports = warp::path("reports")
+        .and(warp::get())
         .and(warp::path::param())
         .and(with_db(db.clone()))
         .and_then(reports_get_handler);
 
+    let reports_delete = warp::path("reports")
+        .and(warp::delete())
+        .and(warp::path::param())
+        .and(with_db(db.clone()))
+        .and_then(reports_delete_handler);
+
+    let summaries_delete = warp::path("summaries")
+        .and(warp::delete())
+        .and(warp::path::param())
+        .and(with_db(db.clone()))
+        .and_then(summaries_delete_handler);
+
     let sites = warp::path("sites")
+        .and(warp::get())
         .and(warp::path::param())
         .and(with_db(db.clone()))
         .and_then(sites_get_handler);
 
     let groups = warp::path("group-sites")
+        .and(warp::get())
         .and(warp::path::param())
         .and(with_db(db.clone()))
         .and_then(group_sites_get_handler);
@@ -96,6 +112,8 @@ async fn main() {
         .or(queue_site)*/
         .or(trend)
         .or(reports)
+        .or(reports_delete)
+        .or(summaries_delete)
         .or(sites)
         .or(groups);
 
@@ -158,7 +176,52 @@ async fn trend_get_handler(
 async fn reports_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
     info!("Getting report for {}", &id);
     let report = audit_detail_repository::get_by_id(&id, &db).await.unwrap();
+    dbg!(&report);
     Ok(warp::reply::json(&report))
+}
+
+async fn reports_delete_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
+    info!("Deleting summary for {}", &id);
+    let result = audit_detail_repository::delete(&id.as_str(), &db).await;
+    if let Err(err) = result {
+        log::error!("{}", err);
+        Ok(StatusCode::INTERNAL_SERVER_ERROR)
+    } else {
+        Ok(StatusCode::NO_CONTENT)
+    }
+}
+
+async fn summaries_delete_handler(
+    id: String,
+    db: Database,
+) -> Result<impl warp::Reply, Infallible> {
+    info!("Deleting summary for {}", &id);
+    let result = audit_summary_repository::get_by_id(id.as_str(), &db).await;
+    match result {
+        Ok(Some(summary)) => {
+            let result = audit_summary_repository::delete_by_object_id(&summary.id().clone().unwrap(), &db).await;
+            
+            if let Err(err) = result {
+                log::error!("{}", err);
+                return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+            }
+            
+            let audit_detail_id = summary.audit_detail_id();
+            let result = audit_detail_repository::delete_by_object_id(&audit_detail_id, &db).await;
+
+            if let Err(err) = result {
+                log::error!("{}", err);
+                return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+            }
+
+            Ok(StatusCode::NO_CONTENT)
+        }
+        Ok(None) => Ok(StatusCode::NOT_FOUND),
+        Err(err) => {
+            log::error!("{}", &err);
+            Ok(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
 }
 
 /*
