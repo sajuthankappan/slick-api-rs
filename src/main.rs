@@ -21,6 +21,7 @@ struct ApiConfig {
     score_queue_name: String,
     db_uri: String,
     db_name: String,
+    api_key: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -39,6 +40,7 @@ async fn main() {
         .merge(config::Environment::with_prefix("SLICK"))
         .unwrap();
     let api_config = raw_config.try_into::<ApiConfig>().unwrap();
+    let api_key = string_to_static_str(api_config.api_key);
 
     let db = slick_db::get_db(api_config.db_uri.clone(), api_config.db_name.clone()).await;
 
@@ -67,6 +69,7 @@ async fn main() {
 
     let trend = warp::path("trend")
         .and(warp::get())
+        .and(warp::header::exact("Api-Key", api_key))
         .and(warp::path::param())
         .and(warp::path::param())
         .and(warp::path::param())
@@ -75,30 +78,35 @@ async fn main() {
 
     let reports = warp::path("reports")
         .and(warp::get())
+        .and(warp::header::exact("Api-Key", api_key))
         .and(warp::path::param())
         .and(with_db(db.clone()))
         .and_then(reports_get_handler);
 
     let reports_delete = warp::path("reports")
         .and(warp::delete())
+        .and(warp::header::exact("Api-Key", api_key))
         .and(warp::path::param())
         .and(with_db(db.clone()))
         .and_then(reports_delete_handler);
 
     let summaries_delete = warp::path("summaries")
         .and(warp::delete())
+        .and(warp::header::exact("Api-Key", api_key))
         .and(warp::path::param())
         .and(with_db(db.clone()))
         .and_then(summaries_delete_handler);
 
     let sites = warp::path("sites")
         .and(warp::get())
+        .and(warp::header::exact("Api-Key", api_key))
         .and(warp::path::param())
         .and(with_db(db.clone()))
         .and_then(sites_get_handler);
 
     let groups = warp::path("group-sites")
         .and(warp::get())
+        .and(warp::header::exact("Api-Key", api_key))
         .and(warp::path::param())
         .and(with_db(db.clone()))
         .and_then(group_sites_get_handler);
@@ -121,6 +129,11 @@ async fn main() {
 
     warp::serve(routes).run(addr).await;
 }
+
+fn string_to_static_str(s: String) -> &'static str {
+    Box::leak(s.into_boxed_str())
+}
+
 /*
 async fn queue_page_post_handler(
     channel: Channel,

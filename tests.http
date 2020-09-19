@@ -1,19 +1,26 @@
 GET {{slickApiBaseUrl}}/ping
+Api-Key: {{slickApiKey}}
 
 ###
 GET {{slickApiBaseUrl}}/reports/5f0d5200006fef9f00f2f744
+Api-Key: {{slickApiKey}}
 
 ###
 DELETE {{slickApiBaseUrl}}/reports/5f0cc43200b1cdd90029f205
+Api-Key: {{slickApiKey}}
 
 ###
 DELETE {{slickApiBaseUrl}}/summaries/5f0cc43200b1cdd90029f205
+Api-Key: {{slickApiKey}}
 
 ###
 GET {{slickApiBaseUrl}}/group-sites/5f19e077e6a84b43bd9d776b
+Api-Key: {{slickApiKey}}
 
 ###
 GET {{slickApiBaseUrl}}/sites/5ee92bd96b118d28f9ba4cd6
+Api-Key: {{slickApiKey}}
 
 ###
 GET {{slickApiBaseUrl}}/trend/5ef9fc58c273739f4f93d499/home/mobile-6
+Api-Key: {{slickApiKey}}
