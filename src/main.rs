@@ -1,9 +1,10 @@
+mod auth;
 mod data;
+mod handlers;
+mod models;
 
 use config;
-use data::repositories::{
-    audit_detail_repository, audit_summary_repository, group_site_repository, site_repository,
-};
+
 use data::slick_db;
 use env_logger;
 use log::info;
@@ -11,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use std::convert::Infallible;
 use std::env;
 use std::net::SocketAddr;
-use warp::{http::StatusCode, Filter};
+use warp::Filter;
 use wread_data_mongodb::mongodb::Database;
 //use slick_models::{PageScoreParameters, ScoreParameters, SiteScoreParameters};
 
@@ -22,13 +23,15 @@ struct ApiConfig {
     db_uri: String,
     db_name: String,
     api_key: String,
+    saju_api_key: String,
+    firebase_auth_api_base_url: String,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+/*#[derive(Deserialize, Serialize, Debug)]
 struct QueueResponse {
     code: i16,
     message: String,
-}
+}*/
 
 #[tokio::main]
 async fn main() {
@@ -59,13 +62,13 @@ async fn main() {
         .and(warp::path("queue-page"))
         .and(with_amqp(channel.clone()))
         .and(warp::body::json())
-        .and_then(queue_page_post_handler);
+        .and_then(handlers::queue_page_post_handler);
 
     let queue_site = warp::post()
         .and(warp::path("queue-site"))
         .and(with_amqp(channel.clone()))
         .and(warp::body::json())
-        .and_then(queue_site_post_handler);*/
+        .and_then(handlers::queue_site_post_handler);*/
 
     let trend = warp::path("trend")
         .and(warp::get())
@@ -74,42 +77,52 @@ async fn main() {
         .and(warp::path::param())
         .and(warp::path::param())
         .and(with_db(db.clone()))
-        .and_then(trend_get_handler);
+        .and_then(handlers::trend_get_handler);
 
     let reports = warp::path("reports")
         .and(warp::get())
         .and(warp::header::exact("Api-Key", api_key))
         .and(warp::path::param())
         .and(with_db(db.clone()))
-        .and_then(reports_get_handler);
+        .and_then(handlers::reports_get_handler);
 
     let reports_delete = warp::path("reports")
         .and(warp::delete())
         .and(warp::header::exact("Api-Key", api_key))
         .and(warp::path::param())
         .and(with_db(db.clone()))
-        .and_then(reports_delete_handler);
+        .and_then(handlers::reports_delete_handler);
 
     let summaries_delete = warp::path("summaries")
         .and(warp::delete())
         .and(warp::header::exact("Api-Key", api_key))
         .and(warp::path::param())
         .and(with_db(db.clone()))
-        .and_then(summaries_delete_handler);
+        .and_then(handlers::summaries_delete_handler);
 
     let sites = warp::path("sites")
         .and(warp::get())
         .and(warp::header::exact("Api-Key", api_key))
         .and(warp::path::param())
         .and(with_db(db.clone()))
-        .and_then(sites_get_handler);
+        .and_then(handlers::sites_get_handler);
 
     let groups = warp::path("group-sites")
         .and(warp::get())
         .and(warp::header::exact("Api-Key", api_key))
         .and(warp::path::param())
         .and(with_db(db.clone()))
-        .and_then(group_sites_get_handler);
+        .and_then(handlers::group_sites_get_handler);
+
+    let register = warp::path("register")
+        .and(warp::post())
+        .and(warp::header::exact("Api-Key", api_key))
+        .and(warp::header("uid"))
+        .and(warp::body::json())
+        .and(with_firebase_auth_url(api_config.firebase_auth_api_base_url))
+        .and(with_saju_api_key(api_config.saju_api_key))
+        .and(with_db(db.clone()))
+        .and_then(handlers::register_handler);
 
     let port = env::var("PORT").unwrap_or("8080".into());
     let server_port = format!("0.0.0.0:{}", port);
@@ -123,7 +136,8 @@ async fn main() {
         .or(reports_delete)
         .or(summaries_delete)
         .or(sites)
-        .or(groups);
+        .or(groups)
+        .or(register);
 
     println!("Listening on {}", &addr);
 
@@ -135,146 +149,18 @@ fn string_to_static_str(s: String) -> &'static str {
 }
 
 /*
-async fn queue_page_post_handler(
-    channel: Channel,
-    page_score_parameters: PageScoreParameters,
-) -> Result<impl warp::Reply, Infallible> {
-    let parameters = ScoreParameters {
-        page: Some(page_score_parameters),
-        site: None,
-    };
-
-    send_score_request_to_queue(&channel, &parameters).await;
-
-    let resp = QueueResponse {
-        code: 200,
-        message: String::from("Queued"),
-    };
-
-    Ok(warp::reply::json(&resp))
-}
-
-async fn queue_site_post_handler(
-    channel: Channel,
-    site_score_parameters: SiteScoreParameters,
-) -> Result<impl warp::Reply, Infallible> {
-    let parameters = ScoreParameters {
-        page: None,
-        site: Some(site_score_parameters),
-    };
-
-    send_score_request_to_queue(&channel, &parameters).await;
-
-    let resp = QueueResponse {
-        code: 200,
-        message: String::from("Queued"),
-    };
-
-    Ok(warp::reply::json(&resp))
-}
-*/
-async fn trend_get_handler(
-    site_id: String,
-    page_id: String,
-    audit_profile_id: String,
-    db: Database,
-) -> Result<impl warp::Reply, Infallible> {
-    info!("Getting trend for site {}", &site_id);
-    let report = audit_summary_repository::get_trend(&site_id, &page_id, &audit_profile_id, &db)
-        .await
-        .unwrap();
-    Ok(warp::reply::json(&report))
-}
-
-async fn reports_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
-    info!("Getting report for {}", &id);
-    let report = audit_detail_repository::get_by_id(&id, &db).await.unwrap();
-    dbg!(&report);
-    Ok(warp::reply::json(&report))
-}
-
-async fn reports_delete_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
-    info!("Deleting summary for {}", &id);
-    let result = audit_detail_repository::delete(&id.as_str(), &db).await;
-    if let Err(err) = result {
-        log::error!("{}", err);
-        Ok(StatusCode::INTERNAL_SERVER_ERROR)
-    } else {
-        Ok(StatusCode::NO_CONTENT)
-    }
-}
-
-async fn summaries_delete_handler(
-    id: String,
-    db: Database,
-) -> Result<impl warp::Reply, Infallible> {
-    info!("Deleting summary for {}", &id);
-    let result = audit_summary_repository::get_by_id(id.as_str(), &db).await;
-    match result {
-        Ok(Some(summary)) => {
-            let result = audit_summary_repository::delete_by_object_id(&summary.id().clone().unwrap(), &db).await;
-            
-            if let Err(err) = result {
-                log::error!("{}", err);
-                return Ok(StatusCode::INTERNAL_SERVER_ERROR);
-            }
-            
-            let audit_detail_id = summary.audit_detail_id();
-            let result = audit_detail_repository::delete_by_object_id(&audit_detail_id, &db).await;
-
-            if let Err(err) = result {
-                log::error!("{}", err);
-                return Ok(StatusCode::INTERNAL_SERVER_ERROR);
-            }
-
-            Ok(StatusCode::NO_CONTENT)
-        }
-        Ok(None) => Ok(StatusCode::NOT_FOUND),
-        Err(err) => {
-            log::error!("{}", &err);
-            Ok(StatusCode::INTERNAL_SERVER_ERROR)
-        }
-    }
-}
-
-/*
-async fn send_score_request_to_queue(channel: &Channel, parameters: &ScoreParameters) {
-    let payload = serde_json::to_string(&parameters).unwrap();
-
-    channel
-        .basic_publish(
-            "",
-            "score-requests",
-            BasicPublishOptions::default(),
-            payload.into_bytes(),
-            BasicProperties::default(),
-        )
-        .await
-        .unwrap()
-        .await
-        .unwrap();
-}
-*/
-
-async fn sites_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
-    info!("Getting site for {}", &id);
-    let site = site_repository::get_by_id(&id, &db).await.unwrap();
-    Ok(warp::reply::json(&site))
-}
-
-async fn group_sites_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
-    info!("Getting sites for group {}", &id);
-    let group_sites = group_site_repository::get_by_group_id(&id, &db)
-        .await
-        .unwrap();
-    Ok(warp::reply::json(&group_sites))
-}
-
-/*
 fn with_amqp(channel: Channel) -> impl Filter<Extract = (Channel,), Error = Infallible> + Clone {
     warp::any().map(move || channel.clone())
 }
 */
 fn with_db(db: Database) -> impl Filter<Extract = (Database,), Error = Infallible> + Clone {
     warp::any().map(move || db.clone())
+}
+
+fn with_firebase_auth_url(url: String) -> impl Filter<Extract = (String,), Error = Infallible> + Clone {
+    warp::any().map(move || url.clone())
+}
+
+fn with_saju_api_key(key: String) -> impl Filter<Extract = (String,), Error = Infallible> + Clone {
+    warp::any().map(move || key.clone())
 }

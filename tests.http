@@ -1,4 +1,7 @@
 GET {{slickApiBaseUrl}}/ping
+
+###
+GET {{slickApiBaseUrl}}/ping2
 Api-Key: {{slickApiKey}}
 
 ###
@@ -24,3 +27,22 @@ Api-Key: {{slickApiKey}}
 ###
 GET {{slickApiBaseUrl}}/trend/5ef9fc58c273739f4f93d499/home/mobile-6
 Api-Key: {{slickApiKey}}
+
+###
+POST {{slickApiBaseUrl}}/register
+Api-Key: {{slickApiKey}}
+uid: {{uid}}
+
+{
+    "registrationCode": "{{slickRegistrationCode}}"
+}
+
+### User  claim
+PUT http://localhost:5000/api/users/claims
+Content-Type: application/json
+Api-Key: {{sajuApiKey}}
+
+{
+  "uid": "{{uid}}",
+  "claims": {"admin": false, "slickUser": true}
+}
