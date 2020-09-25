@@ -21,7 +21,7 @@ RUN cargo build --release
 FROM debian:buster-slim
 
 RUN apt-get update
-RUN apt-get install -y openssl
+RUN apt-get install -y openssl ca-certificates
 #RUN apt-get install -y libcurl4
 
 # copy the build artifact from the build stage
