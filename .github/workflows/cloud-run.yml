@@ -27,6 +27,8 @@ env:
   SLICK_SCORE_QUEUE_NAME: page-score-requests
   SLICK_DB_URI: ${{ secrets.SLICK_DB_URI }}
   SLICK_API_KEY: ${{ secrets.SLICK_API_KEY }}
+  SLICK_SAJU_FIREBASE_AUTH_API_BASE_URL: ${{ secrets.SLICK_SAJU_FIREBASE_AUTH_API_BASE_URL }}
+  SLICK_SAJU_API_KEY: ${{ secrets.SLICK_SAJU_API_KEY }}
   SLICK_DB_NAME: slick
 
 jobs:
