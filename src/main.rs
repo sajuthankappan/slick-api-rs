@@ -24,7 +24,7 @@ struct ApiConfig {
     db_name: String,
     api_key: String,
     saju_api_key: String,
-    firebase_auth_api_base_url: String,
+    saju_firebase_auth_api_base_url: String,
 }
 
 /*#[derive(Deserialize, Serialize, Debug)]
@@ -119,7 +119,7 @@ async fn main() {
         .and(warp::header::exact("Api-Key", api_key))
         .and(warp::header("uid"))
         .and(warp::body::json())
-        .and(with_firebase_auth_url(api_config.firebase_auth_api_base_url))
+        .and(with_firebase_auth_url(api_config.saju_firebase_auth_api_base_url))
         .and(with_saju_api_key(api_config.saju_api_key))
         .and(with_db(db.clone()))
         .and_then(handlers::register_handler);
