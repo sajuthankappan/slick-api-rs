@@ -2,7 +2,6 @@ GET {{slickApiBaseUrl}}/ping
 
 ###
 GET {{slickApiBaseUrl}}/ping2
-Api-Key: {{slickApiKey}}
 
 ###
 GET {{slickApiBaseUrl}}/reports/5f0d5200006fef9f00f2f744
@@ -36,6 +35,18 @@ uid: {{uid}}
 {
     "registrationCode": "{{slickRegistrationCode}}"
 }
+
+###
+POST {{slickApiBaseUrl}}/register
+Authorization: Bearer {{firebaseToken}}
+
+{
+    "registrationCode": "{{slickRegistrationCode}}"
+}
+
+###
+GET {{slickApiBaseUrl}}/group-sites/5f19e077e6a84b43bd9d776b
+Authorization: Bearer {{firebaseToken}}
 
 ### User  claim
 PUT http://localhost:5000/api/users/claims
