@@ -45,7 +45,7 @@ async fn main() {
     let api_config = raw_config.try_into::<ApiConfig>().unwrap();
     let api_key = string_to_static_str(api_config.api_key);
 
-    let db = slick_db::get_db(api_config.db_uri.clone(), api_config.db_name.clone()).await;
+    let db = slick_db::get_db(api_config.db_uri.as_str(), api_config.db_name.as_str()).await;
 
     /*let amqp_addr = api_config.amqp_uri;
     let conn = Connection::connect(

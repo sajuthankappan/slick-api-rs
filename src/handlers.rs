@@ -6,6 +6,7 @@ use crate::data::repositories::{
 use crate::models::registration::{RegisterUserParameters, RegistrationResponse, SajuAuthClaims};
 use std::convert::Infallible;
 use warp::http::StatusCode;
+use warp::reject::Reject;
 use wread_data_mongodb::mongodb::Database;
 
 pub async fn trend_get_handler(
@@ -97,7 +98,7 @@ pub async fn register_handler(
     firebase_auth_base_url: String,
     saju_api_key: String,
     db: Database,
-) -> Result<impl warp::Reply, Infallible> {
+) -> Result<impl warp::Reply, warp::Rejection> {
     log::info!("Registering user {:?}", &uid);
     let code =
         registration_code_repository::get_by_code(&register_user_parameters.registration_code, &db)
@@ -116,19 +117,11 @@ pub async fn register_handler(
             ))
         }
         Ok(None) => {
-            let response = RegistrationResponse::new("Invalid code");
-            Ok(warp::reply::with_status(
-                warp::reply::json(&response),
-                StatusCode::NOT_FOUND,
-            ))
+            Err(warp::reject::not_found())
         }
         Err(err) => {
             log::error!("Error in registration_code_repository::get_by_code {}", err);
-            let response = RegistrationResponse::new("Internal server error");
-            Ok(warp::reply::with_status(
-                warp::reply::json(&response),
-                StatusCode::INTERNAL_SERVER_ERROR,
-            ))
+            Err(warp::reject::custom(MongoError))            
         }
     }
 }
@@ -189,3 +182,9 @@ async fn send_score_request_to_queue(channel: &Channel, parameters: &ScoreParame
         .unwrap();
 }
 */
+
+
+#[derive(Debug)]
+struct MongoError;
+
+impl Reject for MongoError {}
