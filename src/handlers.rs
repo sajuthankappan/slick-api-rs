@@ -4,7 +4,6 @@ use crate::data::repositories::{
     registration_code_repository, site_repository,
 };
 use crate::models::registration::{RegisterUserParameters, RegistrationResponse, SajuAuthClaims};
-use std::convert::Infallible;
 use warp::http::StatusCode;
 use warp::reject::Reject;
 use wread_data_mongodb::mongodb::Database;
@@ -14,7 +13,7 @@ pub async fn trend_get_handler(
     page_id: String,
     audit_profile_id: String,
     db: Database,
-) -> Result<impl warp::Reply, Infallible> {
+) -> Result<impl warp::Reply, warp::Rejection> {
     log::info!("Getting trend for site {}", &site_id);
     let report = audit_summary_repository::get_trend(&site_id, &page_id, &audit_profile_id, &db)
         .await
@@ -22,7 +21,10 @@ pub async fn trend_get_handler(
     Ok(warp::reply::json(&report))
 }
 
-pub async fn reports_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
+pub async fn reports_get_handler(
+    id: String,
+    db: Database,
+) -> Result<impl warp::Reply, warp::Rejection> {
     log::info!("Getting report for {}", &id);
     let report = audit_detail_repository::get_by_id(&id, &db).await.unwrap();
     Ok(warp::reply::json(&report))
@@ -31,12 +33,12 @@ pub async fn reports_get_handler(id: String, db: Database) -> Result<impl warp::
 pub async fn reports_delete_handler(
     id: String,
     db: Database,
-) -> Result<impl warp::Reply, Infallible> {
+) -> Result<impl warp::Reply, warp::Rejection> {
     log::info!("Deleting summary for {}", &id);
     let result = audit_detail_repository::delete(&id.as_str(), &db).await;
     if let Err(err) = result {
         log::error!("{}", err);
-        Ok(StatusCode::INTERNAL_SERVER_ERROR)
+        Err(warp::reject::custom(MongoError))
     } else {
         Ok(StatusCode::NO_CONTENT)
     }
@@ -45,7 +47,7 @@ pub async fn reports_delete_handler(
 pub async fn summaries_delete_handler(
     id: String,
     db: Database,
-) -> Result<impl warp::Reply, Infallible> {
+) -> Result<impl warp::Reply, warp::Rejection> {
     log::info!("Deleting summary for {}", &id);
     let result = audit_summary_repository::get_by_id(id.as_str(), &db).await;
     match result {
@@ -55,14 +57,14 @@ pub async fn summaries_delete_handler(
                     .await;
             if let Err(err) = result {
                 log::error!("{}", err);
-                return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+                return Err(warp::reject::custom(MongoError));
             }
             let audit_detail_id = summary.audit_detail_id();
             let result = audit_detail_repository::delete_by_object_id(&audit_detail_id, &db).await;
 
             if let Err(err) = result {
                 log::error!("{}", err);
-                return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+                return Err(warp::reject::custom(MongoError))
             }
 
             Ok(StatusCode::NO_CONTENT)
@@ -70,12 +72,15 @@ pub async fn summaries_delete_handler(
         Ok(None) => Ok(StatusCode::NOT_FOUND),
         Err(err) => {
             log::error!("{}", &err);
-            Ok(StatusCode::INTERNAL_SERVER_ERROR)
+            Err(warp::reject::custom(MongoError))
         }
     }
 }
 
-pub async fn sites_get_handler(id: String, db: Database) -> Result<impl warp::Reply, Infallible> {
+pub async fn sites_get_handler(
+    id: String,
+    db: Database,
+) -> Result<impl warp::Reply, warp::Rejection> {
     log::info!("Getting site for {}", &id);
     let site = site_repository::get_by_id(&id, &db).await.unwrap();
     Ok(warp::reply::json(&site))
@@ -84,7 +89,7 @@ pub async fn sites_get_handler(id: String, db: Database) -> Result<impl warp::Re
 pub async fn group_sites_get_handler(
     id: String,
     db: Database,
-) -> Result<impl warp::Reply, Infallible> {
+) -> Result<impl warp::Reply, warp::Rejection> {
     log::info!("Getting sites for group {}", &id);
     let group_sites = group_site_repository::get_by_group_id(&id, &db)
         .await
@@ -109,19 +114,16 @@ pub async fn register_handler(
             let auth_client = AuthClient::new(&firebase_auth_base_url, saju_api_key.as_str());
             let claims = SajuAuthClaims::new(false, true);
             let _auth_response = auth_client.add_claims(uid.as_str(), claims).await;
-            
             let response = RegistrationResponse::new("Registered");
             Ok(warp::reply::with_status(
                 warp::reply::json(&response),
                 StatusCode::CREATED,
             ))
         }
-        Ok(None) => {
-            Err(warp::reject::not_found())
-        }
+        Ok(None) => Err(warp::reject::not_found()),
         Err(err) => {
             log::error!("Error in registration_code_repository::get_by_code {}", err);
-            Err(warp::reject::custom(MongoError))            
+            Err(warp::reject::custom(MongoError))
         }
     }
 }
@@ -130,7 +132,7 @@ pub async fn register_handler(
 async fn queue_page_post_handler(
     channel: Channel,
     page_score_parameters: PageScoreParameters,
-) -> Result<impl warp::Reply, Infallible> {
+) -> Result<impl warp::Reply, warp::Rejection> {
     let parameters = ScoreParameters {
         page: Some(page_score_parameters),
         site: None,
@@ -149,7 +151,7 @@ async fn queue_page_post_handler(
 async fn queue_site_post_handler(
     channel: Channel,
     site_score_parameters: SiteScoreParameters,
-) -> Result<impl warp::Reply, Infallible> {
+) -> Result<impl warp::Reply, warp::Rejection> {
     let parameters = ScoreParameters {
         page: None,
         site: Some(site_score_parameters),
@@ -182,7 +184,6 @@ async fn send_score_request_to_queue(channel: &Channel, parameters: &ScoreParame
         .unwrap();
 }
 */
-
 
 #[derive(Debug)]
 struct MongoError;
