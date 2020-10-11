@@ -1906,7 +1906,7 @@ checksum = "c111b5bd5695e56cffe5129854aa230b39c93a305372fdbb2668ca2394eea9f8"
 
 [[package]]
 name = "slick-api"
-version = "0.4.3"
+version = "0.4.4"
 dependencies = [
  "config",
  "env_logger",
@@ -1923,8 +1923,8 @@ dependencies = [
 
 [[package]]
 name = "slick-models"
-version = "0.12.0"
-source = "git+https://github.com/sajuthankappan/slick-models-rs.git#c0a1f7aa69d8587880580264af306eb098dd83b0"
+version = "0.12.1"
+source = "git+https://github.com/sajuthankappan/slick-models-rs.git#ea60a84f491a8798fb1289721b04c3c7d440c03b"
 dependencies = [
  "bson",
  "getset",
@@ -2672,5 +2672,5 @@ version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39f0c922f1a334134dc2f7a8b67dc5d25f0735263feec974345ff706bcf20b0d"
 dependencies = [
- "linked-hash-map 0.5.3",
+ "linked-hash-map 0.3.0",
 ]
