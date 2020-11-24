@@ -1,6 +1,6 @@
 use crate::models::registration::RegistrationCode;
-use wread_data_mongodb::crud_repository;
-use wread_data_mongodb::mongodb::{error::Error, Database};
+use wread_mongodb::crud_repository;
+use wread_mongodb::mongodb::{error::Error, Database};
 
 const COLLECTION_NAME: &str = "registrationCodes";
 

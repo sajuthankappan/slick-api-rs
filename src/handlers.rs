@@ -1,12 +1,12 @@
 use crate::auth::AuthClient;
 use crate::data::repositories::{
-    audit_detail_repository, audit_summary_repository, group_site_repository,
-    registration_code_repository, site_repository,
+    audit_detail_repository, audit_summary_repository, registration_code_repository,
+    site_repository,
 };
 use crate::models::registration::{RegisterUserParameters, RegistrationResponse, SajuAuthClaims};
 use warp::http::StatusCode;
 use warp::reject::Reject;
-use wread_data_mongodb::mongodb::Database;
+use wread_mongodb::mongodb::Database;
 
 pub async fn trend_get_handler(
     site_id: String,
@@ -64,7 +64,7 @@ pub async fn summaries_delete_handler(
 
             if let Err(err) = result {
                 log::error!("{}", err);
-                return Err(warp::reject::custom(MongoError))
+                return Err(warp::reject::custom(MongoError));
             }
 
             Ok(StatusCode::NO_CONTENT)
@@ -87,13 +87,11 @@ pub async fn sites_get_handler(
 }
 
 pub async fn group_sites_get_handler(
-    id: String,
+    group_id: String,
     db: Database,
 ) -> Result<impl warp::Reply, warp::Rejection> {
-    log::info!("Getting sites for group {}", &id);
-    let group_sites = group_site_repository::get_by_group_id(&id, &db)
-        .await
-        .unwrap();
+    log::info!("Getting sites for group {}", &group_id);
+    let group_sites = site_repository::get_by_group_id(&group_id, &db).await.unwrap();
     Ok(warp::reply::json(&group_sites))
 }
 

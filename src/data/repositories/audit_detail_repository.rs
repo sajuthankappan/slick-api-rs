@@ -1,7 +1,7 @@
 use slick_models::AuditDetail;
-use wread_data_mongodb::crud_repository;
-use wread_data_mongodb::mongodb::bson::{doc, oid::ObjectId};
-use wread_data_mongodb::mongodb::{error::Error, results::DeleteResult, Database};
+use wread_mongodb::crud_repository;
+use wread_mongodb::mongodb::bson::{doc, oid::ObjectId};
+use wread_mongodb::mongodb::{error::Error, results::DeleteResult, Database};
 
 const COLLECTION_NAME: &str = "auditDetails";
 

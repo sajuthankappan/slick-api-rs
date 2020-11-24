@@ -7,13 +7,12 @@ use config;
 
 use data::slick_db;
 use env_logger;
-use log::info;
 use serde::{Deserialize, Serialize};
 use std::convert::Infallible;
 use std::env;
 use std::net::SocketAddr;
 use warp::Filter;
-use wread_data_mongodb::mongodb::Database;
+use wread_mongodb::mongodb::Database;
 //use slick_models::{PageScoreParameters, ScoreParameters, SiteScoreParameters};
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -35,8 +34,8 @@ struct QueueResponse {
 
 #[tokio::main]
 async fn main() {
+    println!("Starting Slick API..");
     env_logger::init();
-    info!("Starting Slick API..");
 
     let mut raw_config = config::Config::default();
     raw_config

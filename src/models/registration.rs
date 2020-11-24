@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use wread_data_mongodb::mongodb::bson::oid::ObjectId;
+use wread_mongodb::mongodb::bson::oid::ObjectId;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct RegisterUserParameters {
