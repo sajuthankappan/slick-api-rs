@@ -20,9 +20,9 @@ on:
     - master
 
 env:
-  PROJECT_ID: ${{ secrets.RUN_PROJECT }}
-  RUN_REGION: asia-northeast1
-  SERVICE_NAME: slick
+  GC_PROJECT_ID: ${{ secrets.RUN_PROJECT }}
+  GC_REGION: asia-northeast1
+  API_NAME: slick
   SLICK_AMQP_URI: ${{ secrets.SLICK_AMQP_URI }}
   SLICK_SCORE_QUEUE_NAME: page-score-requests
   SLICK_DB_URI: ${{ secrets.SLICK_DB_URI }}
@@ -64,16 +64,21 @@ jobs:
           --quiet \
           --timeout "60m" \
           --machine-type=n1-highcpu-8 \
-          --tag "gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA"
+          --tag "gcr.io/$GC_PROJECT_ID/$API_NAME:$GITHUB_SHA"
 
     # Deploy image to Cloud Run
     - name: Deploy
       run: |-
-        gcloud run deploy "$SERVICE_NAME" \
+        gcloud run deploy "$API_NAME" \
           --quiet \
-          --region "$RUN_REGION" \
-          --image "gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA" \
+          --region "$GC_REGION" \
+          --image "gcr.io/$GC_PROJECT_ID/$API_NAME:$GITHUB_SHA" \
           --platform "managed" \
           --allow-unauthenticated \
           --memory "128Mi" \
           --set-env-vars "SLICK_AMQP_URI=$SLICK_AMQP_URI,SLICK_SCORE_QUEUE_NAME=$SLICK_SCORE_QUEUE_NAME,SLICK_DB_URI=$SLICK_DB_URI,SLICK_DB_NAME=$SLICK_DB_NAME,SLICK_API_KEY=$SLICK_API_KEY,SLICK_SAJU_FIREBASE_AUTH_API_BASE_URL=$SLICK_SAJU_FIREBASE_AUTH_API_BASE_URL,SLICK_SAJU_API_KEY=$SLICK_SAJU_API_KEY"
+    
+    # Set gcloud run traffic
+    - name: Set traffic
+      run: |-
+        gcloud run services update-traffic $API_NAME --to-latest --platform managed --region $GC_REGION --project $GC_PROJECT_ID 

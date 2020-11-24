@@ -4,6 +4,7 @@ use crate::data::repositories::{
     site_repository,
 };
 use crate::models::registration::{RegisterUserParameters, RegistrationResponse, SajuAuthClaims};
+use slick_models::Site;
 use warp::http::StatusCode;
 use warp::reject::Reject;
 use wread_mongodb::mongodb::Database;
@@ -86,12 +87,42 @@ pub async fn sites_get_handler(
     Ok(warp::reply::json(&site))
 }
 
+pub async fn sites_post_handler(
+    site: Site,
+    db: Database,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    log::info!("Adding site  {}", &site.name());
+    match site_repository::add(&site, &db).await {
+        Ok(_result) => Ok(StatusCode::CREATED),
+        Err(e) => {
+            log::error!("Error in creating site {}", e);
+            Err(warp::reject::custom(MongoError))
+        }
+    }
+}
+
+pub async fn sites_put_handler(
+    site: Site,
+    db: Database,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    log::info!("Update site  {}", &site.name());
+    match site_repository::update(&site, &db).await {
+        Ok(_result) => Ok(StatusCode::NO_CONTENT),
+        Err(e) => {
+            log::error!("Error in creating site {}", e);
+            Err(warp::reject::custom(MongoError))
+        }
+    }
+}
+
 pub async fn group_sites_get_handler(
     group_id: String,
     db: Database,
 ) -> Result<impl warp::Reply, warp::Rejection> {
     log::info!("Getting sites for group {}", &group_id);
-    let group_sites = site_repository::get_by_group_id(&group_id, &db).await.unwrap();
+    let group_sites = site_repository::get_by_group_id(&group_id, &db)
+        .await
+        .unwrap();
     Ok(warp::reply::json(&group_sites))
 }
 

@@ -19,9 +19,23 @@ Api-Key: {{slickApiKey}}
 GET {{slickApiBaseUrl}}/group-sites/5f19e077e6a84b43bd9d776b
 Api-Key: {{slickApiKey}}
 
-###
-GET {{slickApiBaseUrl}}/sites/5ee92bd96b118d28f9ba4cd6
+### Get Site
+GET {{slickApiBaseUrl}}/sites/5fbd5c3f00bc03ba0094496e
 Api-Key: {{slickApiKey}}
+
+### Create Site
+POST {{slickApiBaseUrl}}/sites
+Api-Key: {{slickApiKey}}
+Content-Type: application/json
+
+{"name":"testsiteadd","groupId":{"$oid":"5f19e077e6a84b43bd9d776b"},"pages":[{"id":"home","name":"Home","url":"https://www.pgchemicals.com/"}],"auditProfiles":[{"id":"mobile-6","name":"mobile-6","device":"mobile","lighthouseVersion":"6"},{"id":"desktop-6","name":"desktop-6","device":"desktop","lighthouseVersion":"6"},{"id":"mobile-6-no-gtm","name":"Mobile LH6 No GTM","device":"mobile","lighthouseVersion":"6","blockedUrlPatterns":["https://www.googletagmanager.com/*","https://marketingplatform.google.com/about/tag-manager/*"]}],"lastRunId":0}
+
+### Update Site
+PUT {{slickApiBaseUrl}}/sites
+Api-Key: {{slickApiKey}}
+Content-Type: application/json
+
+{"_id": {"$oid": "5fbd5c3f00bc03ba0094496e"},"name":"testsitemanagement","groupId":{"$oid":"5f19e077e6a84b43bd9d776b"},"pages":[{"id":"home","name":"Home","url":"https://www.pgchemicals.com/"}],"auditProfiles":[{"id":"mobile-6","name":"mobile-6","device":"mobile","lighthouseVersion":"6"},{"id":"desktop-6","name":"desktop-6","device":"desktop","lighthouseVersion":"6"},{"id":"mobile-6-no-gtm","name":"Mobile LH6 No GTM","device":"mobile","lighthouseVersion":"6","blockedUrlPatterns":["https://www.googletagmanager.com/*","https://marketingplatform.google.com/about/tag-manager/*"]}],"lastRunId":0}
 
 ###
 GET {{slickApiBaseUrl}}/trend/5ef9fc58c273739f4f93d499/home/mobile-6

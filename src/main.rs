@@ -106,6 +106,20 @@ async fn main() {
         .and(with_db(db.clone()))
         .and_then(handlers::sites_get_handler);
 
+    let sites_post = warp::path("sites")
+        .and(warp::post())
+        .and(warp::body::json())
+        .and(warp::header::exact("Api-Key", api_key))
+        .and(with_db(db.clone()))
+        .and_then(handlers::sites_post_handler);
+
+    let sites_put = warp::path("sites")
+        .and(warp::put())
+        .and(warp::body::json())
+        .and(warp::header::exact("Api-Key", api_key))
+        .and(with_db(db.clone()))
+        .and_then(handlers::sites_put_handler);
+
     let groups = warp::path("group-sites")
         .and(warp::get())
         .and(warp::header::exact("Api-Key", api_key))
@@ -118,7 +132,9 @@ async fn main() {
         .and(warp::header::exact("Api-Key", api_key))
         .and(warp::header("uid"))
         .and(warp::body::json())
-        .and(with_firebase_auth_url(api_config.saju_firebase_auth_api_base_url))
+        .and(with_firebase_auth_url(
+            api_config.saju_firebase_auth_api_base_url,
+        ))
         .and(with_saju_api_key(api_config.saju_api_key))
         .and(with_db(db.clone()))
         .and_then(handlers::register_handler);
@@ -135,6 +151,8 @@ async fn main() {
         .or(reports_delete)
         .or(summaries_delete)
         .or(sites)
+        .or(sites_post)
+        .or(sites_put)
         .or(groups)
         .or(register);
 
@@ -156,7 +174,9 @@ fn with_db(db: Database) -> impl Filter<Extract = (Database,), Error = Infallibl
     warp::any().map(move || db.clone())
 }
 
-fn with_firebase_auth_url(url: String) -> impl Filter<Extract = (String,), Error = Infallible> + Clone {
+fn with_firebase_auth_url(
+    url: String,
+) -> impl Filter<Extract = (String,), Error = Infallible> + Clone {
     warp::any().map(move || url.clone())
 }
 

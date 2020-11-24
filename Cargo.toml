@@ -1,6 +1,6 @@
 [package]
 name = "slick-api"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Saju Thankappan <sajuthankappan@gmail.com>"]
 edition = "2018"
 
@@ -12,11 +12,10 @@ env_logger = "0.7.1"
 getset = "0.1.1"
 log = "0.4.11"
 reqwest = "0.10.8"
-serde = { version = "1.0.116", features = ["derive"] }
-serde_json = "1.0.58"
+serde = { version = "1.0.117", features = ["derive"] }
+serde_json = "1.0.59"
+slick-models = { version = "0.12.6", git = "https://github.com/sajuthankappan/slick-models-rs.git" }
 tokio = { version = "0.2.22", features = ["macros"] }
 warp = "0.2.5"
-slick-models = { version = "0.12.5", git = "https://github.com/sajuthankappan/slick-models-rs.git" }
+wread-mongodb = "0.14.0"
 
-[dependencies.wread-mongodb]
-version = "0.14.0"
